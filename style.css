@@ -1,49 +1,56 @@
-/* 
-  1. Import a Google Font (Dancing Script) for a fun "girly" style
-*/
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
+/* 1. Use Open Sans from Google Fonts (easy to read) */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap');
 
-/*
-  2. Tiled background using backgroundimage.png 
-     (must be in the same folder as style.css)
+/* 2. Body Tiled Background 
+   - Keep your backgroundimage.png for tiling if you wish 
+   - Adjust background-size or remove if you want the original size
 */
 body {
   margin: 0;
-  font-family: 'Dancing Script', cursive, sans-serif;
-  color: #4f4f4f;
+  min-height: 100vh; /* ensure the page covers the full viewport height */
+  display: flex;
+  justify-content: center;  /* center horizontally */
+  align-items: center;       /* center vertically */
+  
+  font-family: 'Open Sans', sans-serif;
+  color: #333;
 
-  /* Light blue fallback color */
-  background-color: #add8e6;
-
-  /* Tiled background image */
+  background-color: #f0f4ff; /* light background color behind the image */
   background-image: url("backgroundimage.png");
   background-repeat: repeat;
-  background-size: 80px 80px; /* scale each tile (adjust as desired) */
+  background-size: 80px 80px; /* or remove/adjust if you prefer another tile size */
 }
 
-/* Container & Panels */
+/* 3. Main container: 
+   - Larger width (up to 800px)
+   - Centered with margin auto
+   - White background, dark-blue border
+*/
 .container {
-  max-width: 600px;
+  max-width: 800px;
+  width: 90%;       /* so it scales on smaller screens */
   margin: 30px auto;
-  padding: 20px;
-  background: #ffffffb0; /* semi-transparent white overlay so pattern is visible behind */
+  padding: 30px;
+  
+  background: #fff;
+  border: 2px solid #00008B;  /* dark blue border */
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
+/* Panels: each section inside the container */
 .panel {
   margin-bottom: 20px;
-  background: #ffffff; 
-  padding: 15px;
+  background: #ffffff;
+  padding: 20px;
   border-radius: 8px;
-  border: 2px solid #ffc0cb; /* pastel pink border */
+  border: 1px solid #e0e0e0; /* a subtle gray border inside */
 }
 
-/* Headings */
+/* Headings: use dark-blue color, easy to read font-size */
 h2 {
   margin-top: 0;
-  font-family: 'Dancing Script', cursive, sans-serif;
-  color: #ff69b4; /* hot pink */
+  color: #00008B;       /* dark blue headings */
   font-weight: 700;
 }
 
@@ -51,20 +58,21 @@ h2 {
 label {
   display: block;
   margin: 10px 0 5px;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 input[type="text"], textarea {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   box-sizing: border-box;
   margin-bottom: 10px;
-  border: 2px solid #ffc0cb;
+  border: 2px solid #cccccc;
   border-radius: 4px;
-  background-color: #fffafc;
+  font-size: 1rem;
+  font-family: 'Open Sans', sans-serif;
 }
 
-/* Buttons */
+/* Buttons: dark blue background with white text */
 .buttons {
   margin-top: 10px;
 }
@@ -75,28 +83,29 @@ button {
   cursor: pointer;
   border: none;
   border-radius: 6px;
-  background: #ffc0cb;
+  background: #00008B;   /* dark blue */
   color: #ffffff;
   font-weight: bold;
-  font-family: inherit;
+  font-family: 'Open Sans', sans-serif;
   transition: background 0.2s;
+  font-size: 1rem;
 }
 
 button:hover {
-  background: #ff99aa;
+  background: #0000cd; /* a lighter royal blue on hover */
 }
 
 /* Status & Clue Text */
 #status {
   font-weight: bold;
   margin-bottom: 10px;
-  color: #c71585; /* medium violet red */
+  color: #00008B;
 }
 
 #currentClue {
   font-size: 1.2em;
   margin-bottom: 10px;
-  color: #ff69b4;
+  color: #00008B;
 }
 
 /* Messages & Text */
@@ -104,23 +113,36 @@ button:hover {
 #entryMessage,
 #setupMessage,
 #winnerMessage {
-  color: #4f4f4f;
+  color: #333;
   margin-top: 10px;
   font-weight: normal;
 }
 
-/* 3. Responsive Adjustments for Mobile */
+/* 4. Responsive adjustments for very small screens */
 @media (max-width: 600px) {
   body {
-    font-size: 1.2rem;
+    /* remove the flex centering if you want it to scroll 
+       or adapt so it doesn't cut off on very short screens */
+    align-items: flex-start; 
+    padding-top: 20px; 
+  }
+
+  .container {
+    margin: 20px;
+    padding: 20px;
+    max-width: 95%;
   }
 
   h2 {
     font-size: 1.4rem;
   }
 
-  button {
-    padding: 8px 12px;
+  input[type="text"], textarea {
     font-size: 1rem;
+  }
+
+  button {
+    font-size: 1rem;
+    padding: 8px 12px;
   }
 }
