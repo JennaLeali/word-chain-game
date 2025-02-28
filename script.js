@@ -145,27 +145,50 @@ const firebaseConfig = {
   function submitWords() {
     const rawWords = wordListTextarea.value.trim();
     if (!rawWords) {
-      entryMessage.textContent = "Please enter at least one word.";
+      entryMessage.textContent = "Please enter at least one phrase.";
       return;
     }
   
-    // Parse words
+    // Parse phrases (each line or comma-delimited) into an array
     const wordArr = rawWords
       .split(/[\n,]+/)
-      .map(w => w.trim())
-      .filter(w => w.length > 0);
+      .map(p => p.trim())
+      .filter(p => p.length > 0);
   
-    // Quick validation: each word must start with the last letter of the previous
+    // NEW LOGIC: Validate that the last word of phrase[i-1] 
+    // matches the first word of phrase[i].
     for (let i = 1; i < wordArr.length; i++) {
-      const prev = wordArr[i-1];
-      const curr = wordArr[i];
-      if (curr[0].toLowerCase() !== prev.slice(-1).toLowerCase()) {
-        entryMessage.textContent = `Word chain error at "${prev}" -> "${curr}".`;
+      const prevWords = wordArr[i - 1].trim().split(/\s+/);
+      const currWords = wordArr[i].trim().split(/\s+/);
+  
+      const prevLastWord = prevWords[prevWords.length - 1].toLowerCase();
+      const currFirstWord = currWords[0].toLowerCase();
+  
+      if (prevLastWord !== currFirstWord) {
+        entryMessage.textContent = `Word chain error at "${wordArr[i - 1]}" → "${wordArr[i]}". 
+          The last word of the previous phrase must match the first word of the next.`;
         return;
       }
     }
   
+    // If validation passes, update the Firebase database
+    const updates = {};
+    updates[`games/${localGameId}/${localPlayerId}/words`] = wordArr;
+    updates[`games/${localGameId}/${localPlayerId}/isReady`] = true;
+  
+    db.ref().update(updates).then(() => {
+      entryMessage.textContent = "Word list submitted. Waiting for other player...";
+  
+      // Continue listening for the other player's readiness...
+      db.ref(`games/${localGameId}`).on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+        });
+    });
+  }
+  
     // Update in DB
+    
     const updates = {};
     updates[`games/${localGameId}/${localPlayerId}/words`] = wordArr;
     updates[`games/${localGameId}/${localPlayerId}/isReady`] = true;
