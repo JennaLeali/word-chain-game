@@ -87,6 +87,8 @@ const firebaseConfig = {
     localPlayerId = "player1";
     isGameCreator = true;
   
+    // NOTE: partialReveal is set to 1 initially,
+    // so we always show the first letter of the second word from the start.
     db.ref(`games/${localGameId}`).set({
       player1: {
         name: localPlayerName,
@@ -103,7 +105,7 @@ const firebaseConfig = {
       turn: "player1",
       gameActive: true,
       winner: null,
-      partialReveal: 0
+      partialReveal: 1 // <--- Start each word with 1 letter shown
     }).then(() => {
       const shareUrl = `${window.location.origin}${window.location.pathname}?gameId=${localGameId}`;
       
@@ -253,7 +255,8 @@ const firebaseConfig = {
       const targetPhrase = opponentWords[opponentIndex];
       const [firstWord, secondWord] = targetPhrase.split(/\s+/);
   
-      const partialReveal = data.partialReveal || 0;
+      // partialReveal starts at 1, so we always show the first letter of secondWord.
+      const partialReveal = data.partialReveal || 1;
       const revealCount = Math.min(partialReveal, secondWord.length);
   
       const revealedLetters = secondWord.substring(0, revealCount);
@@ -270,8 +273,9 @@ const firebaseConfig = {
    ****************************************************/
   
   /**
-   * SUBMIT GUESS via a Firebase transaction to ensure
-   * only the correct player at the correct time can guess.
+   * SUBMIT GUESS
+   * - If guess is correct: remain your turn, move to next word, partialReveal=1
+   * - If guess is wrong: switch turn, partialReveal=1
    */
   function submitGuess() {
     const guess = guessInput.value.trim();
@@ -280,17 +284,14 @@ const firebaseConfig = {
   
     const gameRef = db.ref(`games/${localGameId}`);
   
-    // We wrap the logic in a transaction
     gameRef.transaction((gameData) => {
       if (!gameData || !gameData.gameActive) return gameData;
   
       // If it's NOT our turn, do nothing
       if (gameData.turn !== localPlayerId) {
-        // We'll show a message to the user outside the transaction
         return gameData;
       }
   
-      // Identify the opponent
       const opponentId = (gameData.turn === 'player1') ? 'player2' : 'player1';
       const opponentIndex = gameData[opponentId].currentIndex || 0;
       const opponentWords = gameData[opponentId].words || [];
@@ -300,48 +301,51 @@ const firebaseConfig = {
       const targetPhrase = opponentWords[opponentIndex];
       const [firstWord, secondWord] = targetPhrase.split(/\s+/);
   
-      // Compare guess
       if (guess.toLowerCase() === secondWord.toLowerCase()) {
-        // Correct guess
+        // == CORRECT GUESS ==
         gameData[opponentId].currentIndex = opponentIndex + 1;
   
+        // If the opponent is out of words, current player wins
         if (gameData[opponentId].currentIndex >= opponentWords.length) {
-          // This player has guessed all opponent's words -> they win
           gameData.winner = gameData.turn;
           gameData.gameActive = false;
         } else {
-          // Switch turns
-          gameData.turn = opponentId;
-          gameData.partialReveal = 0;
+          // Stay on same turn, reset partialReveal to 1 for the next word
+          gameData.partialReveal = 1;
         }
+      } else {
+        // == WRONG GUESS ==
+        // Switch turn, reset partialReveal=1
+        gameData.turn = opponentId;
+        gameData.partialReveal = 1;
       }
-      // If guess is wrong, do nothing (just a no-op; partialReveal stays the same)
+  
       return gameData;
     }, (error, committed, snapshot) => {
       if (error) {
         console.error("submitGuess transaction error:", error);
       } else if (!committed) {
-        // The transaction aborted (e.g., data changed or not your turn)
         guessMessage.textContent = "It's not your turn to guess!";
       } else {
-        // Transaction succeeded. If the guess was correct or not, the DB is updated.
-        // We'll rely on initGameListener() to reflect changes.
-        // If guess was wrong, we do a quick local message:
+        // Committed successfully
         const updatedData = snapshot.val();
+  
+        // If the turn is still ours, it means we guessed incorrectly => see logic above?
+        // Actually, we do the reverse check:
         if (updatedData.turn === localPlayerId) {
-          // The turn is still ours => guess was wrong
-          guessMessage.textContent = "Wrong guess. Reveal letters or try again.";
-        } else {
-          // Turn switched => guess was correct
+          // Turn is still ours => guess was correct
           guessMessage.textContent = "Correct guess!";
+        } else {
+          // Turn switched => guess was wrong
+          guessMessage.textContent = "Wrong guess. Next player's turn!";
         }
       }
     });
   }
   
   /**
-   * REVEAL NEXT LETTER via a transaction
-   * so only the correct player at the correct time can reveal letters.
+   * REVEAL NEXT LETTER
+   * - If you reveal a letter, your turn ends immediately, partialReveal=1 for the other player.
    */
   function revealNextLetter() {
     const gameRef = db.ref(`games/${localGameId}`);
@@ -363,12 +367,17 @@ const firebaseConfig = {
       const targetPhrase = opponentWords[opponentIndex];
       const [firstWord, secondWord] = targetPhrase.split(/\s+/);
   
-      let partialReveal = gameData.partialReveal || 0;
+      let partialReveal = gameData.partialReveal || 1;
+      // Reveal exactly one more letter
       if (partialReveal < secondWord.length) {
         partialReveal++;
         gameData.partialReveal = partialReveal;
       }
-      // If it's fully revealed, do nothing
+  
+      // After revealing a letter, end your turn
+      gameData.turn = opponentId;
+      gameData.partialReveal = 1; // next player's turn starts with first letter revealed
+  
       return gameData;
     }, (error, committed, snapshot) => {
       if (error) {
@@ -376,18 +385,8 @@ const firebaseConfig = {
       } else if (!committed) {
         guessMessage.textContent = "It's not your turn to reveal letters.";
       } else {
-        // success or partial reveal done
-        const updatedData = snapshot.val();
-        const partialReveal = updatedData.partialReveal;
-        const opponentId = (updatedData.turn === 'player1') ? 'player2' : 'player1';
-        const opponentWords = updatedData[opponentId].words || [];
-        const opponentIndex = updatedData[opponentId].currentIndex || 0;
-        if (opponentIndex < opponentWords.length) {
-          const secondWord = opponentWords[opponentIndex].split(/\s+/)[1];
-          if (partialReveal >= secondWord.length) {
-            guessMessage.textContent = "All letters are already revealed!";
-          }
-        }
+        // Committed
+        guessMessage.textContent = "You revealed a letter. Next player's turn!";
       }
     });
   }
@@ -402,12 +401,15 @@ const firebaseConfig = {
       `The winner is <strong>${winnerName}</strong> (${winnerId}).`;
   }
   
+  /**
+   * On replay, reset partialReveal to 1 for the new game
+   */
   function replayGame() {
     const updates = {
       gameActive: true,
       winner: null,
       turn: "player1",
-      partialReveal: 0,
+      partialReveal: 1, // Start each new game with first letter revealed
       "player1/currentIndex": 0,
       "player1/isReady": false,
       "player1/words": [],
