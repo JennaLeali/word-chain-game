@@ -1,4 +1,5 @@
-  /****************************************************
+
+/****************************************************
  *  1. FIREBASE CONFIGURATION
  ****************************************************/
 const firebaseConfig = {
@@ -41,6 +42,7 @@ const firebaseConfig = {
   const guessMessage = document.getElementById('guessMessage');
   
   const winnerMessage = document.getElementById('winnerMessage');
+  const replayBtn = document.getElementById('replayBtn');
   
   /****************************************************
    *  3. GAME STATE
@@ -60,6 +62,9 @@ const firebaseConfig = {
   submitWordsBtn.addEventListener('click', submitWords);
   guessBtn.addEventListener('click', submitGuess);
   revealLetterBtn.addEventListener('click', revealNextLetter);
+  
+  // NEW: Replay
+  replayBtn.addEventListener('click', replayGame);
   
   // On page load, check if there's a gameId in the URL
   window.addEventListener('DOMContentLoaded', () => {
@@ -103,7 +108,7 @@ const firebaseConfig = {
       turn: "player1", 
       gameActive: true,
       winner: null,
-      partialReveal: 0 // We'll start revealing from 0 letters of the 2nd word
+      partialReveal: 0
     }).then(() => {
       const shareUrl = `${window.location.origin}${window.location.pathname}?gameId=${localGameId}`;
       
@@ -115,7 +120,6 @@ const firebaseConfig = {
         <br><br>
         After copying the link, click "Continue to Word Entry".
       `;
-      // Show the proceed button
       proceedBtn.style.display = "inline-block";
     });
   }
@@ -135,19 +139,16 @@ const firebaseConfig = {
       }
   
       const gameData = snapshot.val();
-      // Check if there's space for player2
       if (gameData.player1 && gameData.player2 && gameData.player2.name) {
         setupMessage.textContent = "This game is already full.";
         return;
       }
   
-      // Join as player2
       localPlayerId = "player2";
       return db.ref(`games/${localGameId}/player2`).update({
         name: localPlayerName
       }).then(() => {
         setupMessage.textContent = `Joined game with ID: ${localGameId}`;
-        // Go to the word-entry panel
         setupPanel.style.display = 'none';
         wordEntryPanel.style.display = 'block';
       });
@@ -155,7 +156,6 @@ const firebaseConfig = {
   }
   
   function proceedToWordEntry() {
-    // Called by the "Continue to Word Entry" button
     setupPanel.style.display = 'none';
     wordEntryPanel.style.display = 'block';
   }
@@ -163,8 +163,6 @@ const firebaseConfig = {
   /****************************************************
    *  6. SUBMIT WORDS (PHRASE-BASED CHAIN)
    ****************************************************/
-  // Each phrase must have exactly two words. 
-  // The last word of phrase[i-1] = the first word of phrase[i].
   function submitWords() {
     const rawWords = wordListTextarea.value.trim();
     if (!rawWords) {
@@ -174,7 +172,7 @@ const firebaseConfig = {
   
     // Convert input into array of lines/phrases
     const phraseArr = rawWords
-      .split(/[\n,]+/)    // split by newline or comma
+      .split(/[\n,]+/)
       .map(p => p.trim())
       .filter(p => p.length > 0);
   
@@ -228,16 +226,13 @@ const firebaseConfig = {
   }
   
   /****************************************************
-   *  7. MAIN GAME LOOP / LISTENER
+   *  7. MAIN GAME LISTENER
    ****************************************************/
-  // We only guess the *second word* of each two-word phrase.
-  // The first word is fully displayed, the second word is hidden or partially revealed.
   function initGameListener() {
     db.ref(`games/${localGameId}`).on('value', (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
   
-      // Check if game is still active
       if (!data.gameActive) {
         // Possibly the game ended
         if (data.winner) {
@@ -246,13 +241,13 @@ const firebaseConfig = {
         return;
       }
   
-      // If there's a winner while gameActive is false, it just ended
       if (data.winner) {
+        // If there's a winner while gameActive is still true, it's about to end
         displayWinner(data.winner, data[data.winner].name);
         return;
       }
   
-      // Determine whose turn it is
+      // Current turn
       const currentTurn = data.turn;
       statusDiv.textContent = `It's ${data[currentTurn].name}'s turn to guess.`;
   
@@ -267,20 +262,16 @@ const firebaseConfig = {
         return;
       }
   
-      // e.g., "Rain Drop"
       const targetPhrase = opponentWords[opponentIndex];
       const [firstWord, secondWord] = targetPhrase.split(/\s+/);
   
-      // partialReveal indicates how many letters of the second word are shown
       const partialReveal = data.partialReveal || 0;
       const revealCount = Math.min(partialReveal, secondWord.length);
-      
-      // Build displayed second word
+  
       const revealedLetters = secondWord.substring(0, revealCount);
       const hiddenCount = secondWord.length - revealCount;
       const underscores = "_".repeat(hiddenCount);
   
-      // Display "Rain D___" or "Rain ____", etc.
       currentClueDiv.textContent = 
         `Clue: ${firstWord} ${revealedLetters}${underscores}`;
     });
@@ -289,7 +280,6 @@ const firebaseConfig = {
   /****************************************************
    *  8. GUESS & REVEAL LETTERS
    ****************************************************/
-  // The guess should match the *second word* exactly.
   function submitGuess() {
     const guess = guessInput.value.trim();
     guessInput.value = "";
@@ -304,13 +294,12 @@ const firebaseConfig = {
   
       const opponentWords = data[opponentId].words || [];
       const opponentIndex = data[opponentId].currentIndex || 0;
-      
+  
       if (opponentIndex >= opponentWords.length) return;
   
       const targetPhrase = opponentWords[opponentIndex];
       const [firstWord, secondWord] = targetPhrase.split(/\s+/);
   
-      // Compare guess to the second word only
       if (guess.toLowerCase() === secondWord.toLowerCase()) {
         guessMessage.textContent = "Correct guess!";
         const newIndex = opponentIndex + 1;
@@ -318,14 +307,11 @@ const firebaseConfig = {
         let updates = {};
         updates[`games/${localGameId}/${opponentId}/currentIndex`] = newIndex;
   
-        // If no more phrases left in opponent's list, current turn player wins
         if (newIndex >= opponentWords.length) {
           updates[`games/${localGameId}/winner`] = currentTurn;
           updates[`games/${localGameId}/gameActive`] = false;
         } else {
-          // Switch turns
           updates[`games/${localGameId}/turn`] = opponentId;
-          // Reset partialReveal to 0 for the next phrase
           updates[`games/${localGameId}/partialReveal`] = 0;
         }
   
@@ -337,7 +323,6 @@ const firebaseConfig = {
   }
   
   function revealNextLetter() {
-    // Only the current guessing player can reveal letters
     db.ref(`games/${localGameId}`).once('value').then((snapshot) => {
       const data = snapshot.val();
       if (!data || !data.gameActive) return;
@@ -350,6 +335,7 @@ const firebaseConfig = {
       const opponentId = (data.turn === 'player1') ? 'player2' : 'player1';
       const opponentWords = data[opponentId].words || [];
       const opponentIndex = data[opponentId].currentIndex || 0;
+  
       if (opponentIndex >= opponentWords.length) return;
   
       const targetPhrase = opponentWords[opponentIndex];
@@ -366,13 +352,41 @@ const firebaseConfig = {
   }
   
   /****************************************************
-   *  9. GAME OVER
+   *  9. GAME OVER & REPLAY
    ****************************************************/
   function displayWinner(winnerId, winnerName) {
     gameBoardPanel.style.display = 'none';
     gameOverPanel.style.display = 'block';
     winnerMessage.innerHTML = 
       `The winner is <strong>${winnerName}</strong> (${winnerId}).`;
+  }
+  
+  // NEW: Reset the same game so we can play again
+  function replayGame() {
+    // We'll keep the same localGameId, player names, etc.
+    // Reset everything else in DB so we can start fresh.
+    const updates = {
+      gameActive: true,
+      winner: null,
+      turn: "player1",
+      partialReveal: 0,
+      // reset player states
+      "player1/currentIndex": 0,
+      "player1/isReady": false,
+      "player1/words": [],
+      "player2/currentIndex": 0,
+      "player2/isReady": false,
+      "player2/words": []
+    };
+  
+    db.ref(`games/${localGameId}`).update(updates).then(() => {
+      // Hide Game Over screen
+      gameOverPanel.style.display = 'none';
+      // Show Word Entry so they can re-enter phrases
+      wordListTextarea.value = "";
+      entryMessage.textContent = "";
+      wordEntryPanel.style.display = 'block';
+    });
   }
   
   /****************************************************
@@ -382,7 +396,6 @@ const firebaseConfig = {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   }
   
-  // Parse the URL query string, e.g., ?gameId=ABC123
   function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);

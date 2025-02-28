@@ -13,11 +13,9 @@
     <div id="setup" class="panel">
       <h2>Join or Create a Word Chain Game</h2>
 
-      <!-- Player Name -->
       <label for="playerName">Your Name:</label>
       <input type="text" id="playerName" placeholder="Enter your name" />
 
-      <!-- This field is optional if using a share link -->
       <label for="gameId">Game ID (optional):</label>
       <input type="text" id="gameId" placeholder="Enter game ID to join (optional)" />
 
@@ -27,8 +25,6 @@
       </div>
 
       <p id="setupMessage"></p>
-
-      <!-- Only shown AFTER creating a new game -->
       <button id="proceedBtn" style="display: none;">
         Continue to Word Entry
       </button>
@@ -64,18 +60,19 @@
       <p id="guessMessage"></p>
     </div>
 
-    <!-- Game Over Screen (replaces gameBoard on finish) -->
+    <!-- Game Over Screen -->
     <div id="gameOver" class="panel" style="display:none;">
       <h2>Game Over</h2>
       <p id="winnerMessage"></p>
+      <!-- New: Replay Button -->
+      <button id="replayBtn">Play Again</button>
     </div>
 
   </div>
 
-  <!-- Firebase SDK and main script -->
+  <!-- Firebase SDK and script -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="script.js"></script>
-
 </body>
 </html>
