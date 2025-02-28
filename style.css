@@ -1,103 +1,114 @@
-/* 
-  "Girly" + Light Blue Theme
-  - Soft pastel background: light blue (#add8e6)
-  - White panels with pinkish borders
-  - Some pink accent for buttons/hover states
-  - A playful Google Font-like "Comic Sans MS" or cursive for headings 
-    (Here we just use a generic 'cursive' fallback as an example)
-*/
+/* 1. Import Dancing Script from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
 
-/* Body & Global */
+/* 2. Base styling for body */
 body {
-    margin: 0;
-    font-family: "Comic Sans MS", "Comic Sans", cursive; /* playful font */
-    background: #add8e6; /* light blue background */
-    color: #4f4f4f;
+  margin: 0;
+  font-family: 'Dancing Script', cursive, sans-serif; /* use the web font */
+  background: #add8e6; /* light blue background */
+  color: #4f4f4f;
+}
+
+/* Container & Panels */
+.container {
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #ffffffb0; /* semi-transparent white */
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.panel {
+  margin-bottom: 20px;
+  background: #ffffff; /* solid white panel background */
+  padding: 15px;
+  border-radius: 8px;
+  border: 2px solid #ffc0cb; /* pastel pink border */
+}
+
+/* Headings */
+h2 {
+  margin-top: 0;
+  font-family: 'Dancing Script', cursive, sans-serif;
+  color: #ff69b4; /* hot pink heading text */
+  font-weight: 700; /* use the bold weight from Dancing Script */
+}
+
+/* Labels, Inputs, Textarea */
+label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  border: 2px solid #ffc0cb; /* pastel pink border */
+  border-radius: 4px;
+  background-color: #fffafc; /* very light pink background */
+}
+
+/* Buttons */
+.buttons {
+  margin-top: 10px;
+}
+
+button {
+  margin-right: 10px;
+  padding: 10px 15px;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  background: #ffc0cb; /* pastel pink button background */
+  color: #ffffff;
+  font-weight: bold;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #ff99aa; /* darker pink on hover */
+}
+
+/* Status & Clue Text */
+#status {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #c71585; /* medium violet red */
+}
+
+#currentClue {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+  color: #ff69b4;
+}
+
+/* Messages & Text */
+#guessMessage,
+#entryMessage,
+#setupMessage,
+#winnerMessage {
+  color: #4f4f4f;
+  margin-top: 10px;
+  font-weight: normal;
+}
+
+/* 3. Mobile Responsive Adjustments */
+@media (max-width: 600px) {
+  body {
+    font-size: 1.2rem; /* slightly bigger for small screens if you like */
   }
-  
-  /* Container & Panels */
-  .container {
-    max-width: 600px;
-    margin: 30px auto;
-    padding: 20px;
-    background: #ffffffb0; /* semi-transparent white */
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  }
-  
-  .panel {
-    margin-bottom: 20px;
-    background: #ffffff; /* solid white panel background */
-    padding: 15px;
-    border-radius: 8px;
-    border: 2px solid #ffc0cb; /* pastel pink border */
-  }
-  
-  /* Headings */
+
   h2 {
-    margin-top: 0;
-    font-family: "Comic Sans MS", "Comic Sans", cursive;
-    color: #ff69b4; /* hot pink heading text */
+    font-size: 1.4rem; /* adjust heading size */
   }
-  
-  /* Labels, Inputs, Textarea */
-  label {
-    display: block;
-    margin: 10px 0 5px;
-    font-weight: bold;
-  }
-  
-  input[type="text"], textarea {
-    width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-    border: 2px solid #ffc0cb; /* pastel pink border */
-    border-radius: 4px;
-    background-color: #fffafc; /* very light pink background */
-  }
-  
-  /* Buttons */
-  .buttons {
-    margin-top: 10px;
-  }
-  
+
   button {
-    margin-right: 10px;
-    padding: 10px 15px;
-    cursor: pointer;
-    border: none;
-    border-radius: 6px;
-    background: #ffc0cb; /* pastel pink button background */
-    color: #ffffff;
-    font-weight: bold;
-    font-family: inherit;
-    transition: background 0.2s;
+    padding: 8px 12px;
+    font-size: 1rem;
   }
-  
-  button:hover {
-    background: #ff99aa; /* darker pink on hover */
-  }
-  
-  /* Status & Clue Text */
-  #status {
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #c71585; /* medium violet red */
-  }
-  
-  #currentClue {
-    font-size: 1.2em;
-    margin-bottom: 10px;
-    color: #ff69b4;
-  }
-  
-  /* Messages & Text */
-  #guessMessage,
-  #entryMessage,
-  #setupMessage,
-  #winnerMessage {
-    color: #4f4f4f;
-    margin-top: 10px;
-    font-weight: normal;
-  }
+}
