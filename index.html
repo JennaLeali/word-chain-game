@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Word Chain Game (Phrase-based)</title>
+  <title>Word Chain Game (Two-Word Phrases)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
       <label for="playerName">Your Name:</label>
       <input type="text" id="playerName" placeholder="Enter your name" />
 
-      <!-- This field is optional if using a share link (but still available) -->
+      <!-- This field is optional if using a share link -->
       <label for="gameId">Game ID (optional):</label>
       <input type="text" id="gameId" placeholder="Enter game ID to join (optional)" />
 
@@ -26,10 +26,9 @@
         <button id="joinGameBtn">Join Game</button>
       </div>
 
-      <!-- This paragraph will show the share link or any error messages -->
       <p id="setupMessage"></p>
 
-      <!-- Only visible after a new game is created -->
+      <!-- Only shown AFTER creating a new game -->
       <button id="proceedBtn" style="display: none;">
         Continue to Word Entry
       </button>
@@ -37,13 +36,15 @@
 
     <!-- Word Entry Panel -->
     <div id="wordEntry" class="panel" style="display:none;">
-      <h2>Enter Your Phrase Chain</h2>
+      <h2>Enter Your Two-Word Phrases</h2>
       <p>
-        Each phrase must flow to the next by sharing the last word.<br>
-        Example: <em>Rain Drop</em> → <em>Drop down</em> → <em>Down time</em> → ...
+        Each phrase has exactly two words, like <em>Rain Drop</em> → <em>Drop Down</em> → <em>Down Town</em>, etc.
+      </p>
+      <p>
+        Make sure the <strong>last word</strong> of each phrase is the <strong>first word</strong> of the next phrase.
       </p>
       <textarea id="wordList" rows="5" cols="30" 
-        placeholder="Enter multi-word phrases, each on a new line or separated by commas">
+        placeholder="Example:\nRain Drop\nDrop Down\nDown Town">
       </textarea>
       <button id="submitWordsBtn">Submit Phrase List</button>
       <p id="entryMessage"></p>
@@ -55,7 +56,7 @@
       <div id="status"></div>
       <div id="currentClue"></div>
 
-      <input type="text" id="guessInput" placeholder="Your guess" />
+      <input type="text" id="guessInput" placeholder="Guess the hidden word" />
       <div class="buttons">
         <button id="guessBtn">Submit Guess</button>
         <button id="revealLetterBtn">Reveal Next Letter</button>
