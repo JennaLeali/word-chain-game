@@ -1,4 +1,3 @@
-
 /****************************************************
  *  1. FIREBASE CONFIGURATION
  ****************************************************/
@@ -49,7 +48,7 @@ const firebaseConfig = {
    ****************************************************/
   let localPlayerName = "";
   let localGameId = "";
-  let localPlayerId = ""; // "player1" or "player2"
+  let localPlayerId = "";
   let isGameCreator = false;
   
   /****************************************************
@@ -62,8 +61,6 @@ const firebaseConfig = {
   submitWordsBtn.addEventListener('click', submitWords);
   guessBtn.addEventListener('click', submitGuess);
   revealLetterBtn.addEventListener('click', revealNextLetter);
-  
-  // NEW: Replay
   replayBtn.addEventListener('click', replayGame);
   
   // On page load, check if there's a gameId in the URL
@@ -86,12 +83,10 @@ const firebaseConfig = {
       return;
     }
   
-    // Generate a unique game ID
     localGameId = generateGameId();
     localPlayerId = "player1";
     isGameCreator = true;
   
-    // Initialize game data in the database
     db.ref(`games/${localGameId}`).set({
       player1: {
         name: localPlayerName,
@@ -105,7 +100,7 @@ const firebaseConfig = {
         currentIndex: 0,
         isReady: false
       },
-      turn: "player1", 
+      turn: "player1",
       gameActive: true,
       winner: null,
       partialReveal: 0
@@ -161,7 +156,7 @@ const firebaseConfig = {
   }
   
   /****************************************************
-   *  6. SUBMIT WORDS (PHRASE-BASED CHAIN)
+   *  6. SUBMIT WORDS (PHRASE-BASED)
    ****************************************************/
   function submitWords() {
     const rawWords = wordListTextarea.value.trim();
@@ -170,7 +165,6 @@ const firebaseConfig = {
       return;
     }
   
-    // Convert input into array of lines/phrases
     const phraseArr = rawWords
       .split(/[\n,]+/)
       .map(p => p.trim())
@@ -191,8 +185,8 @@ const firebaseConfig = {
       const prevParts = phraseArr[i - 1].split(/\s+/);
       const currParts = phraseArr[i].split(/\s+/);
   
-      const prevLastWord = prevParts[1].toLowerCase(); // second word of prev
-      const currFirstWord = currParts[0].toLowerCase(); // first word of current
+      const prevLastWord = prevParts[1].toLowerCase();
+      const currFirstWord = currParts[0].toLowerCase();
   
       if (prevLastWord !== currFirstWord) {
         entryMessage.textContent =
@@ -202,7 +196,6 @@ const firebaseConfig = {
       }
     }
   
-    // If validation passes, store phrases in DB
     const updates = {};
     updates[`games/${localGameId}/${localPlayerId}/words`] = phraseArr;
     updates[`games/${localGameId}/${localPlayerId}/isReady`] = true;
@@ -210,13 +203,11 @@ const firebaseConfig = {
     db.ref().update(updates).then(() => {
       entryMessage.textContent = "Phrase list submitted. Waiting for the other player...";
   
-      // Listen for both players to be ready
       db.ref(`games/${localGameId}`).on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
   
         if (data.player1.isReady && data.player2.isReady) {
-          // Both players ready -> start the game
           wordEntryPanel.style.display = 'none';
           gameBoardPanel.style.display = 'block';
           initGameListener();
@@ -242,16 +233,13 @@ const firebaseConfig = {
       }
   
       if (data.winner) {
-        // If there's a winner while gameActive is still true, it's about to end
         displayWinner(data.winner, data[data.winner].name);
         return;
       }
   
-      // Current turn
       const currentTurn = data.turn;
       statusDiv.textContent = `It's ${data[currentTurn].name}'s turn to guess.`;
   
-      // The phrase to guess is from the *opponent*'s list
       const opponentId = (currentTurn === 'player1') ? 'player2' : 'player1';
       const opponentWords = data[opponentId].words || [];
       const opponentIndex = data[opponentId].currentIndex || 0;
@@ -288,6 +276,12 @@ const firebaseConfig = {
     db.ref(`games/${localGameId}`).once('value').then((snapshot) => {
       const data = snapshot.val();
       if (!data || !data.gameActive) return;
+  
+      // *** NEW TURN CHECK ***
+      if (data.turn !== localPlayerId) {
+        guessMessage.textContent = "It's not your turn to guess!";
+        return;
+      }
   
       const currentTurn = data.turn;
       const opponentId = (currentTurn === 'player1') ? 'player2' : 'player1';
@@ -327,6 +321,7 @@ const firebaseConfig = {
       const data = snapshot.val();
       if (!data || !data.gameActive) return;
   
+      // We already have a check here:
       if (data.turn !== localPlayerId) {
         guessMessage.textContent = "It's not your turn to reveal letters.";
         return;
@@ -361,16 +356,12 @@ const firebaseConfig = {
       `The winner is <strong>${winnerName}</strong> (${winnerId}).`;
   }
   
-  // NEW: Reset the same game so we can play again
   function replayGame() {
-    // We'll keep the same localGameId, player names, etc.
-    // Reset everything else in DB so we can start fresh.
     const updates = {
       gameActive: true,
       winner: null,
       turn: "player1",
       partialReveal: 0,
-      // reset player states
       "player1/currentIndex": 0,
       "player1/isReady": false,
       "player1/words": [],
@@ -380,9 +371,7 @@ const firebaseConfig = {
     };
   
     db.ref(`games/${localGameId}`).update(updates).then(() => {
-      // Hide Game Over screen
       gameOverPanel.style.display = 'none';
-      // Show Word Entry so they can re-enter phrases
       wordListTextarea.value = "";
       entryMessage.textContent = "";
       wordEntryPanel.style.display = 'block';
