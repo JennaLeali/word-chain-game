@@ -188,7 +188,7 @@ const firebaseConfig = {
   }
   
     // Update in DB
-    
+
     const updates = {};
     updates[`games/${localGameId}/${localPlayerId}/words`] = wordArr;
     updates[`games/${localGameId}/${localPlayerId}/isReady`] = true;
@@ -213,7 +213,6 @@ const firebaseConfig = {
         }
       });
     });
-  }
   
   /*********************
    *  MAIN GAME LISTENER
