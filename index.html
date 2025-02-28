@@ -12,20 +12,27 @@
     <!-- Setup Panel -->
     <div id="setup" class="panel">
       <h2>Join or Create a Word Chain Game</h2>
-      
+
       <!-- Player Name -->
       <label for="playerName">Your Name:</label>
       <input type="text" id="playerName" placeholder="Enter your name" />
 
-      <!-- This field is optional if user is using a shareable link -->
-      <label for="gameId">Game ID (optional if using share link):</label>
+      <!-- This field is optional if using a share link (but still available) -->
+      <label for="gameId">Game ID (optional):</label>
       <input type="text" id="gameId" placeholder="Enter game ID to join (optional)" />
 
       <div class="buttons">
         <button id="createGameBtn">Create New Game</button>
         <button id="joinGameBtn">Join Game</button>
       </div>
+
+      <!-- This paragraph will show the share link or any error messages -->
       <p id="setupMessage"></p>
+
+      <!-- Only visible after a new game is created -->
+      <button id="proceedBtn" style="display: none;">
+        Continue to Word Entry
+      </button>
     </div>
 
     <!-- Word Entry Panel -->
@@ -47,7 +54,7 @@
       <h2>Word Chain Game</h2>
       <div id="status"></div>
       <div id="currentClue"></div>
-      
+
       <input type="text" id="guessInput" placeholder="Your guess" />
       <div class="buttons">
         <button id="guessBtn">Submit Guess</button>
