@@ -1,3 +1,4 @@
+/* Basic styling */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -29,12 +30,25 @@ body {
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
+    margin-bottom: 10px;
+  }
+  
+  .buttons {
+    margin-top: 10px;
   }
   
   button {
-    margin: 10px 5px 0 0;
+    margin-right: 10px;
     padding: 10px 15px;
     cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    background: #007bff;
+    color: #fff;
+  }
+  
+  button:hover {
+    background: #0056b3;
   }
   
   #status {
@@ -47,7 +61,9 @@ body {
     margin-bottom: 10px;
   }
   
-  #guessMessage {
-    margin-top: 10px;
+  #guessMessage,
+  #entryMessage,
+  #setupMessage {
     color: #333;
+    margin-top: 10px;
   }

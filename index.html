@@ -3,52 +3,71 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Word Chain Game</title>
+  <title>Word Chain Game (Phrase-based)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <div class="container">
-    <!-- Step 1: Authentication / Identity (create or join game) -->
+    <!-- Setup Panel -->
     <div id="setup" class="panel">
       <h2>Join or Create a Word Chain Game</h2>
+      
+      <!-- Player Name -->
       <label for="playerName">Your Name:</label>
       <input type="text" id="playerName" placeholder="Enter your name" />
 
-      <label for="gameId">Game ID (optional if creating new):</label>
-      <input type="text" id="gameId" placeholder="Enter game ID to join" />
+      <!-- This field is optional if user is using a shareable link -->
+      <label for="gameId">Game ID (optional if using share link):</label>
+      <input type="text" id="gameId" placeholder="Enter game ID to join (optional)" />
 
-      <button id="createGameBtn">Create New Game</button>
-      <button id="joinGameBtn">Join Game</button>
+      <div class="buttons">
+        <button id="createGameBtn">Create New Game</button>
+        <button id="joinGameBtn">Join Game</button>
+      </div>
       <p id="setupMessage"></p>
     </div>
 
-    <!-- Step 2: Enter word chain list -->
+    <!-- Word Entry Panel -->
     <div id="wordEntry" class="panel" style="display:none;">
-      <h2>Enter Your Word Chain</h2>
-      <p>A valid word chain consists of sequential word pairs that form common phrases, compound words, or natural expressions, ensuring the second word starts with the last word of the previous phrase while maintaining logical and recognizable connections.</p>
-      <textarea id="wordList" rows="5" cols="30" placeholder="Enter words separated by commas or line breaks"></textarea>
-      <button id="submitWordsBtn">Submit Word List</button>
+      <h2>Enter Your Phrase Chain</h2>
+      <p>
+        Each phrase must flow to the next by sharing the last word.<br>
+        Example: <em>Rain Drop</em> → <em>Drop down</em> → <em>Down time</em> → ...
+      </p>
+      <textarea id="wordList" rows="5" cols="30" 
+        placeholder="Enter multi-word phrases, each on a new line or separated by commas">
+      </textarea>
+      <button id="submitWordsBtn">Submit Phrase List</button>
       <p id="entryMessage"></p>
     </div>
 
-    <!-- Step 3: Game Board -->
+    <!-- Game Board Panel -->
     <div id="gameBoard" class="panel" style="display:none;">
       <h2>Word Chain Game</h2>
       <div id="status"></div>
       <div id="currentClue"></div>
-      <input type="text" id="guessInput" placeholder="Your guess"/>
-      <button id="guessBtn">Submit Guess</button>
-      <button id="revealLetterBtn">Reveal Next Letter</button>
+      
+      <input type="text" id="guessInput" placeholder="Your guess" />
+      <div class="buttons">
+        <button id="guessBtn">Submit Guess</button>
+        <button id="revealLetterBtn">Reveal Next Letter</button>
+      </div>
       <p id="guessMessage"></p>
+    </div>
+
+    <!-- Game Over Screen (replaces gameBoard on finish) -->
+    <div id="gameOver" class="panel" style="display:none;">
+      <h2>Game Over</h2>
+      <p id="winnerMessage"></p>
     </div>
 
   </div>
 
-  <!-- Firebase and script.js -->
-  <!-- Replace the script below with your Firebase config -->
+  <!-- Firebase SDK and main script -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="script.js"></script>
+
 </body>
 </html>
